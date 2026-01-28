@@ -7,6 +7,7 @@ import com.portfolio.artportfolio.repository.AboutSectionRepository;
 import com.portfolio.artportfolio.repository.CvEntryRepository;
 import com.portfolio.artportfolio.repository.PortfolioImageRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,7 +28,9 @@ public class PortfolioService {
     private final AboutSectionRepository aboutRepository;
     private final CvEntryRepository cvRepository;
 
-    private final String uploadDir = "src/main/resources/static/uploads/";
+    // FIXED: Use environment variable with fallback
+    @Value("${upload.directory:/app/uploads}")
+    private String uploadDir;
 
     // Portfolio Images
     public List<PortfolioImage> getAllImages() {
@@ -54,7 +57,7 @@ public class PortfolioService {
         // Save to database
         PortfolioImage image = new PortfolioImage();
         image.setFilename(filename);
-        image.setFilepath("/uploads/" + filename);
+        image.setFilepath("/uploads/" + filename);  // URL path for serving
         image.setTitle(title);
         image.setDescription(description);
         image.setDisplayOrder(imageRepository.findAll().size());
@@ -68,7 +71,7 @@ public class PortfolioService {
                 .orElseThrow(() -> new RuntimeException("Image not found"));
 
         // Delete file
-        Path filePath = Paths.get(uploadDir + image.getFilename());
+        Path filePath = Paths.get(uploadDir, image.getFilename());
         Files.deleteIfExists(filePath);
 
         // Delete from database

@@ -38,7 +38,7 @@ public class DataInitializer implements CommandLineRunner {
             CvEntry entry1 = new CvEntry();
             entry1.setYear("2024");
             entry1.setTitle("Master of Fine Arts");
-            entry1.setDescription("Academy of Fine Arts, Dresden");
+            entry1.setDescription("Academy of Fine Arts, Leipzig");
             entry1.setEntryType("EDUCATION");
             entry1.setDisplayOrder(0);
             cvRepository.save(entry1);
