@@ -586,18 +586,32 @@ body.edit-mode .cv-actions {
     display: flex !important;
 }
 
-/* ==================== DRAG AND DROP ==================== */
-body.edit-mode .portfolio-item,
-body.edit-mode .cv-entry {
-    cursor: move;
-}
+/* ============================================
+   DRAG AND DROP STYLES
+   ============================================ */
 
+/* Dragging state */
 .portfolio-item.dragging,
 .cv-entry.dragging {
     opacity: 0.5;
+    cursor: move !important;
 }
 
+/* Drop target indicator */
 .portfolio-item.drag-over,
 .cv-entry.drag-over {
-    border: 2px dashed var(--accent-color);
+    border: 2px dashed #333;
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Edit mode cursor for draggable items */
+body.edit-mode .portfolio-item[draggable="true"],
+body.edit-mode .cv-entry[draggable="true"] {
+    cursor: move;
+}
+
+/* Smooth transition for drag operations */
+.portfolio-item,
+.cv-entry {
+    transition: opacity 0.2s ease, transform 0.2s ease;
 }

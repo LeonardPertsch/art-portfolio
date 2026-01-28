@@ -15,6 +15,13 @@ function toggleEditMode() {
     editModeBtn.innerHTML = editMode
         ? '<span id="editModeIcon">✓</span> Exit Edit Mode'
         : '<span id="editModeIcon">✎</span> Edit Mode';
+
+    // Enable/disable drag and drop
+    if (editMode) {
+        enableDragAndDrop();
+    } else {
+        disableDragAndDrop();
+    }
 }
 
 // ============================================
@@ -151,7 +158,7 @@ function closeEditAboutModal() {
     document.getElementById('editAboutModal').style.display = 'none';
 }
 
-// FIXED: Handle about section update with proper JSON encoding
+// Handle about section update with proper JSON encoding
 document.getElementById('editAboutForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -295,6 +302,193 @@ async function deleteCvEntry(id) {
 }
 
 // ============================================
+// DRAG AND DROP FUNCTIONALITY
+// ============================================
+
+let draggedElement = null;
+let draggedType = null;
+
+function initializeDragAndDrop() {
+    // Initialize portfolio items as non-draggable
+    document.querySelectorAll('.portfolio-item').forEach(item => {
+        item.setAttribute('draggable', 'false');
+    });
+
+    // Initialize CV entries as non-draggable
+    document.querySelectorAll('.cv-entry').forEach(entry => {
+        entry.setAttribute('draggable', 'false');
+    });
+}
+
+function enableDragAndDrop() {
+    // Enable dragging for portfolio items
+    document.querySelectorAll('.portfolio-item').forEach(item => {
+        item.setAttribute('draggable', 'true');
+        item.addEventListener('dragstart', handleDragStart);
+        item.addEventListener('dragend', handleDragEnd);
+        item.addEventListener('dragover', handleDragOver);
+        item.addEventListener('drop', handleDrop);
+        item.addEventListener('dragleave', handleDragLeave);
+        item.style.cursor = 'move';
+    });
+
+    // Enable dragging for CV entries
+    document.querySelectorAll('.cv-entry').forEach(entry => {
+        entry.setAttribute('draggable', 'true');
+        entry.addEventListener('dragstart', handleDragStart);
+        entry.addEventListener('dragend', handleDragEnd);
+        entry.addEventListener('dragover', handleDragOver);
+        entry.addEventListener('drop', handleDrop);
+        entry.addEventListener('dragleave', handleDragLeave);
+        entry.style.cursor = 'move';
+    });
+}
+
+function disableDragAndDrop() {
+    // Disable dragging for portfolio items
+    document.querySelectorAll('.portfolio-item').forEach(item => {
+        item.setAttribute('draggable', 'false');
+        item.removeEventListener('dragstart', handleDragStart);
+        item.removeEventListener('dragend', handleDragEnd);
+        item.removeEventListener('dragover', handleDragOver);
+        item.removeEventListener('drop', handleDrop);
+        item.removeEventListener('dragleave', handleDragLeave);
+        item.style.cursor = 'default';
+    });
+
+    // Disable dragging for CV entries
+    document.querySelectorAll('.cv-entry').forEach(entry => {
+        entry.setAttribute('draggable', 'false');
+        entry.removeEventListener('dragstart', handleDragStart);
+        entry.removeEventListener('dragend', handleDragEnd);
+        entry.removeEventListener('dragover', handleDragOver);
+        entry.removeEventListener('drop', handleDrop);
+        entry.removeEventListener('dragleave', handleDragLeave);
+        entry.style.cursor = 'default';
+    });
+}
+
+function handleDragStart(e) {
+    draggedElement = this;
+    draggedType = this.classList.contains('portfolio-item') ? 'image' : 'cv';
+    this.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', this.innerHTML);
+}
+
+function handleDragEnd(e) {
+    this.classList.remove('dragging');
+
+    // Remove all drag-over classes
+    document.querySelectorAll('.drag-over').forEach(el => {
+        el.classList.remove('drag-over');
+    });
+}
+
+function handleDragOver(e) {
+    if (e.preventDefault) {
+        e.preventDefault();
+    }
+
+    // Only allow drop on same type
+    const isValidTarget =
+        (draggedType === 'image' && this.classList.contains('portfolio-item')) ||
+        (draggedType === 'cv' && this.classList.contains('cv-entry'));
+
+    if (isValidTarget && this !== draggedElement) {
+        e.dataTransfer.dropEffect = 'move';
+        this.classList.add('drag-over');
+    }
+
+    return false;
+}
+
+function handleDragLeave(e) {
+    this.classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+    if (e.stopPropagation) {
+        e.stopPropagation();
+    }
+
+    this.classList.remove('drag-over');
+
+    if (draggedElement !== this) {
+        // Determine if we should insert before or after based on mouse position
+        const rect = this.getBoundingClientRect();
+        const midpoint = draggedType === 'image'
+            ? rect.left + rect.width / 2
+            : rect.top + rect.height / 2;
+
+        const mousePos = draggedType === 'image' ? e.clientX : e.clientY;
+
+        if (mousePos < midpoint) {
+            this.parentNode.insertBefore(draggedElement, this);
+        } else {
+            this.parentNode.insertBefore(draggedElement, this.nextSibling);
+        }
+
+        // Save new order
+        if (draggedType === 'image') {
+            saveImageOrder();
+        } else {
+            saveCvOrder();
+        }
+    }
+
+    return false;
+}
+
+async function saveImageOrder() {
+    const grid = document.getElementById('portfolioGrid');
+    const items = Array.from(grid.querySelectorAll('.portfolio-item'));
+    const imageIds = items.map(item => parseInt(item.getAttribute('data-id')));
+
+    try {
+        const response = await fetch('/api/images/reorder', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(imageIds)
+        });
+
+        if (!response.ok) {
+            console.error('Failed to save image order');
+            alert('Failed to save image order');
+        }
+    } catch (error) {
+        console.error('Error saving image order:', error);
+        alert('Error saving image order');
+    }
+}
+
+async function saveCvOrder() {
+    const grid = document.getElementById('cvGrid');
+    const entries = Array.from(grid.querySelectorAll('.cv-entry'));
+    const cvIds = entries.map(entry => parseInt(entry.getAttribute('data-id')));
+
+    try {
+        const response = await fetch('/api/cv/reorder', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(cvIds)
+        });
+
+        if (!response.ok) {
+            console.error('Failed to save CV order');
+            alert('Failed to save CV order');
+        }
+    } catch (error) {
+        console.error('Error saving CV order:', error);
+        alert('Error saving CV order');
+    }
+}
+
+// ============================================
 // SMOOTH SCROLLING
 // ============================================
 
@@ -334,3 +528,8 @@ window.onclick = function(event) {
         }
     });
 }
+
+// Initialize drag and drop on page load
+window.addEventListener('DOMContentLoaded', () => {
+    initializeDragAndDrop();
+});
