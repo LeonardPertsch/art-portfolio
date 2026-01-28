@@ -4,11 +4,20 @@ let editMode = false;
 // Toggle Edit Mode
 function toggleEditMode() {
     editMode = !editMode;
+    const body = document.body;
     const editElements = document.querySelectorAll('.edit-only');
     const editModeBtn = document.getElementById('editModeBtn');
 
+    // Toggle edit-mode class on body
+    body.classList.toggle('edit-mode', editMode);
+
+    // Show/hide edit elements
     editElements.forEach(el => {
-        el.style.display = editMode ? 'block' : 'none';
+        if (editMode) {
+            el.style.display = '';
+        } else {
+            el.style.display = 'none';
+        }
     });
 
     editModeBtn.classList.toggle('active', editMode);
@@ -47,8 +56,8 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
     const description = document.getElementById('imageDescription').value;
 
     formData.append('file', fileInput.files[0]);
-    formData.append('title', title);
-    formData.append('description', description);
+    if (title) formData.append('title', title);
+    if (description) formData.append('description', description);
 
     try {
         const response = await fetch('/api/images/upload', {
@@ -57,7 +66,7 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
         });
 
         if (response.ok) {
-            alert('Image uploaded successfully!');
+            alert('Image/Video uploaded successfully!');
             closeUploadModal();
             location.reload();
         } else {
@@ -109,7 +118,7 @@ document.getElementById('editImageForm').addEventListener('submit', async (e) =>
         });
 
         if (response.ok) {
-            alert('Image updated successfully!');
+            alert('Image/Video updated successfully!');
             closeEditImageModal();
             location.reload();
         } else {
@@ -124,7 +133,7 @@ document.getElementById('editImageForm').addEventListener('submit', async (e) =>
 
 // Delete image
 async function deleteImage(id) {
-    if (!confirm('Are you sure you want to delete this image?')) {
+    if (!confirm('Are you sure you want to delete this image/video?')) {
         return;
     }
 
@@ -134,7 +143,7 @@ async function deleteImage(id) {
         });
 
         if (response.ok) {
-            alert('Image deleted successfully!');
+            alert('Image/Video deleted successfully!');
             location.reload();
         } else {
             const error = await response.text();
@@ -329,7 +338,6 @@ function enableDragAndDrop() {
         item.addEventListener('dragover', handleDragOver);
         item.addEventListener('drop', handleDrop);
         item.addEventListener('dragleave', handleDragLeave);
-        item.style.cursor = 'move';
     });
 
     // Enable dragging for CV entries
@@ -340,7 +348,6 @@ function enableDragAndDrop() {
         entry.addEventListener('dragover', handleDragOver);
         entry.addEventListener('drop', handleDrop);
         entry.addEventListener('dragleave', handleDragLeave);
-        entry.style.cursor = 'move';
     });
 }
 
@@ -353,7 +360,6 @@ function disableDragAndDrop() {
         item.removeEventListener('dragover', handleDragOver);
         item.removeEventListener('drop', handleDrop);
         item.removeEventListener('dragleave', handleDragLeave);
-        item.style.cursor = 'default';
     });
 
     // Disable dragging for CV entries
@@ -364,7 +370,6 @@ function disableDragAndDrop() {
         entry.removeEventListener('dragover', handleDragOver);
         entry.removeEventListener('drop', handleDrop);
         entry.removeEventListener('dragleave', handleDragLeave);
-        entry.style.cursor = 'default';
     });
 }
 
@@ -404,7 +409,10 @@ function handleDragOver(e) {
 }
 
 function handleDragLeave(e) {
-    this.classList.remove('drag-over');
+    // Only remove if we're actually leaving the element (not entering a child)
+    if (e.target === this) {
+        this.classList.remove('drag-over');
+    }
 }
 
 function handleDrop(e) {
@@ -412,18 +420,26 @@ function handleDrop(e) {
         e.stopPropagation();
     }
 
+    e.preventDefault();
     this.classList.remove('drag-over');
 
-    if (draggedElement !== this) {
+    if (draggedElement !== this && draggedElement !== null) {
         // Determine if we should insert before or after based on mouse position
         const rect = this.getBoundingClientRect();
-        const midpoint = draggedType === 'image'
-            ? rect.left + rect.width / 2
-            : rect.top + rect.height / 2;
 
-        const mousePos = draggedType === 'image' ? e.clientX : e.clientY;
+        let insertBefore = false;
 
-        if (mousePos < midpoint) {
+        if (draggedType === 'image') {
+            // For portfolio grid (horizontal flow)
+            const midpointX = rect.left + rect.width / 2;
+            insertBefore = e.clientX < midpointX;
+        } else {
+            // For CV entries (vertical flow)
+            const midpointY = rect.top + rect.height / 2;
+            insertBefore = e.clientY < midpointY;
+        }
+
+        if (insertBefore) {
             this.parentNode.insertBefore(draggedElement, this);
         } else {
             this.parentNode.insertBefore(draggedElement, this.nextSibling);
@@ -445,6 +461,8 @@ async function saveImageOrder() {
     const items = Array.from(grid.querySelectorAll('.portfolio-item'));
     const imageIds = items.map(item => parseInt(item.getAttribute('data-id')));
 
+    console.log('Saving image order:', imageIds);
+
     try {
         const response = await fetch('/api/images/reorder', {
             method: 'PUT',
@@ -454,13 +472,15 @@ async function saveImageOrder() {
             body: JSON.stringify(imageIds)
         });
 
-        if (!response.ok) {
+        if (response.ok) {
+            console.log('Image order saved successfully');
+        } else {
             console.error('Failed to save image order');
             alert('Failed to save image order');
         }
     } catch (error) {
         console.error('Error saving image order:', error);
-        alert('Error saving image order');
+        alert('Error saving image order: ' + error.message);
     }
 }
 
@@ -468,6 +488,8 @@ async function saveCvOrder() {
     const grid = document.getElementById('cvGrid');
     const entries = Array.from(grid.querySelectorAll('.cv-entry'));
     const cvIds = entries.map(entry => parseInt(entry.getAttribute('data-id')));
+
+    console.log('Saving CV order:', cvIds);
 
     try {
         const response = await fetch('/api/cv/reorder', {
@@ -478,13 +500,15 @@ async function saveCvOrder() {
             body: JSON.stringify(cvIds)
         });
 
-        if (!response.ok) {
+        if (response.ok) {
+            console.log('CV order saved successfully');
+        } else {
             console.error('Failed to save CV order');
             alert('Failed to save CV order');
         }
     } catch (error) {
         console.error('Error saving CV order:', error);
-        alert('Error saving CV order');
+        alert('Error saving CV order: ' + error.message);
     }
 }
 

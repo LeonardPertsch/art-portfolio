@@ -401,7 +401,7 @@ button {
 
 .cv-actions {
     margin-top: var(--spacing-sm);
-    display: flex;
+    display: none;
     gap: var(--spacing-sm);
 }
 
@@ -586,6 +586,10 @@ body.edit-mode .cv-actions {
     display: flex !important;
 }
 
+body.edit-mode .image-overlay {
+    display: flex !important;
+}
+
 /* ============================================
    DRAG AND DROP STYLES
    ============================================ */
@@ -600,8 +604,8 @@ body.edit-mode .cv-actions {
 /* Drop target indicator */
 .portfolio-item.drag-over,
 .cv-entry.drag-over {
-    border: 2px dashed #333;
-    background-color: rgba(0, 0, 0, 0.05);
+    border: 2px dashed var(--accent-color);
+    background-color: rgba(212, 175, 55, 0.1);
 }
 
 /* Edit mode cursor for draggable items */
@@ -613,5 +617,14 @@ body.edit-mode .cv-entry[draggable="true"] {
 /* Smooth transition for drag operations */
 .portfolio-item,
 .cv-entry {
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease, border 0.2s ease;
+}
+
+/* Prevent text selection during drag */
+body.edit-mode .portfolio-item,
+body.edit-mode .cv-entry {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
