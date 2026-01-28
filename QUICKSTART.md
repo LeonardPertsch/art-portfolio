@@ -1,187 +1,218 @@
-# 🚀 Schnellstart-Anleitung
+# 🚀 Quick Deploy Checklist - Render.com
 
-## Sofort loslegen in 3 Schritten:
+Folge diese Schritte für einen schnellen Render-Deploy:
 
-### 1️⃣ Projekt öffnen
-Öffne das Projekt in deiner IDE (IntelliJ IDEA, Eclipse, VS Code)
+## ☑️ Vor dem Deploy
 
-### 2️⃣ Starten
+- [ ] Alle Dateien in Git committet
+- [ ] GitHub/GitLab Repository erstellt
+- [ ] Code ins Repository gepusht
+- [ ] Render.com Account erstellt
 
-**Option A: Mit Start-Script (Einfachste Methode)**
+## 📦 Dateien Check
+
+Stelle sicher, dass folgende Dateien in deinem Repository sind:
+
+- [ ] `Dockerfile`
+- [ ] `docker-compose.yml` (für lokale Tests)
+- [ ] `pom.xml`
+- [ ] `src/main/resources/application.properties`
+- [ ] `.dockerignore`
+- [ ] `.gitignore`
+- [ ] `render.yaml` (optional - für One-Click Deploy)
+
+## 🎯 Deploy-Optionen
+
+### Option A: Blueprint Deploy (Empfohlen - am einfachsten)
+
+1. [ ] Push `render.yaml` zu deinem Repository
+2. [ ] Gehe zu https://dashboard.render.com
+3. [ ] Klicke **"New" → "Blueprint"**
+4. [ ] Wähle dein Repository
+5. [ ] Render erstellt automatisch:
+   - PostgreSQL Datenbank
+   - Web Service
+   - Alle Environment Variables
+6. [ ] Warte 5-10 Minuten
+7. [ ] ✅ Fertig! Deine URL: `https://art-portfolio.onrender.com`
+
+### Option B: Manuelle Erstellung
+
+#### Schritt 1: Datenbank erstellen
+1. [ ] Dashboard → **"New +" → "PostgreSQL"**
+2. [ ] Konfiguration:
+   - Name: `portfolio-db`
+   - Database: `portfoliodb`
+   - User: `portfolio`
+   - Region: `Frankfurt` (oder nächste)
+   - Plan: `Free`
+3. [ ] **"Create Database"** klicken
+4. [ ] Warten bis Status = `Available`
+5. [ ] **Internal Database URL** kopieren (wichtig!)
+
+#### Schritt 2: Web Service erstellen
+1. [ ] Dashboard → **"New +" → "Web Service"**
+2. [ ] Repository verbinden
+3. [ ] Konfiguration:
+   - Name: `art-portfolio`
+   - Region: `Frankfurt` (gleich wie DB)
+   - Branch: `main`
+   - Runtime: `Docker`
+   - Plan: `Free` (oder `Starter` für $7/mo)
+
+4. [ ] **Advanced** → Environment Variables hinzufügen:
+
 ```bash
-# Windows
-start.bat
+# Datenbank (Internal URL von Schritt 1 einfügen!)
+SPRING_DATASOURCE_URL=<deine-internal-database-url>
+SPRING_DATASOURCE_USERNAME=portfolio
+SPRING_DATASOURCE_PASSWORD=<dein-db-password>
 
-# Mac/Linux
-./start.sh
+# App Config
+SPRING_JPA_HIBERNATE_DDL_AUTO=update
+SPRING_JPA_SHOW_SQL=false
+SERVER_PORT=8080
+
+# File Upload
+SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE=50MB
+SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE=50MB
+
+# Java
+JAVA_OPTS=-XX:MaxRAMPercentage=75.0
 ```
 
-**Option B: Mit Maven**
+5. [ ] **"Create Web Service"** klicken
+6. [ ] Warten auf ersten Deploy (5-10 Min)
+7. [ ] ✅ Fertig!
+
+## 🧪 Nach dem Deploy
+
+- [ ] Öffne deine App-URL
+- [ ] Teste die Hauptseite
+- [ ] Aktiviere Edit Mode
+- [ ] Teste Upload-Funktion
+- [ ] Teste About-Bereich
+- [ ] Teste CV-Einträge
+
+## 🔧 Wenn etwas nicht funktioniert
+
+### Problem: Build schlägt fehl
 ```bash
-mvn spring-boot:run
+# Prüfe Logs in Render Dashboard
+# Häufige Ursachen:
+- pom.xml fehlt oder ist fehlerhaft
+- Java Version falsch (muss 21 sein)
+- Maven Dependencies nicht auflösbar
 ```
 
-**Option C: In IntelliJ/Eclipse**
-- Rechtsklick auf `ArtPortfolioApplication.java`
-- "Run" oder "Debug" wählen
-
-### 3️⃣ Browser öffnen
-```
-http://localhost:8080
-```
-
----
-
-## ✨ Erste Schritte im Portfolio
-
-### Edit Mode aktivieren
-1. Klicke auf **"Edit Mode"** Button (oben rechts)
-2. Jetzt sind alle Bearbeitungsfunktionen sichtbar
-
-### Dein erstes Bild hochladen
-1. Edit Mode aktivieren
-2. Klick auf **"+ Add Image"** in der "Selected Work" Section
-3. Wähle ein Bild aus (JPG, PNG, etc.)
-4. Optional: Füge Titel und Beschreibung hinzu
-5. Klick auf **"Upload"**
-
-### About-Text anpassen
-1. Edit Mode aktivieren
-2. Scrolle zur "About Me" Section
-3. Klick auf **"✎ Edit"** neben dem Titel
-4. Schreibe deinen eigenen Text
-5. Klick auf **"Save"**
-
-### Lebenslauf hinzufügen
-1. Edit Mode aktivieren
-2. Scrolle zur "CV" Section
-3. Klick auf **"+ Add Entry"**
-4. Fülle die Felder aus:
-   - **Jahr**: z.B. "2024"
-   - **Titel**: z.B. "Master of Fine Arts"
-   - **Beschreibung**: Details zur Ausbildung/Ausstellung/Award
-   - **Typ**: EDUCATION, EXHIBITION, AWARD oder EXPERIENCE
-5. Klick auf **"Save"**
-
----
-
-## 🎨 Design anpassen
-
-### Farben ändern
-Öffne: `src/main/resources/static/css/style.css`
-
-Ändere die Farben im `:root` Block:
-```css
-:root {
-    --primary-color: #2c2c2c;     /* Hauptfarbe (dunkel) */
-    --secondary-color: #666;       /* Sekundärfarbe (grau) */
-    --accent-color: #d4af37;       /* Akzentfarbe (gold) */
-    --background: #fafafa;         /* Hintergrund */
-}
-```
-
-### Schriftarten ändern
-Im HTML `<head>` oder in der CSS-Datei:
-```css
---serif: 'Cormorant', serif;    /* Für Überschriften */
---sans: 'Lato', sans-serif;     /* Für Fließtext */
-```
-
----
-
-## 📁 Wichtige Dateien
-
-| Datei | Funktion |
-|-------|----------|
-| `pom.xml` | Maven Konfiguration & Dependencies |
-| `application.properties` | Server & Datenbank Einstellungen |
-| `index.html` | HTML Template |
-| `style.css` | Alle Styles (Reseda-Design) |
-| `main.js` | JavaScript für Interaktivität |
-| `ArtPortfolioApplication.java` | Main Application |
-
----
-
-## 🔧 Häufige Anpassungen
-
-### Port ändern (falls 8080 belegt)
-`application.properties`:
-```properties
-server.port=8081
-```
-
-### Upload-Größe erhöhen
-`application.properties`:
-```properties
-spring.servlet.multipart.max-file-size=20MB
-spring.servlet.multipart.max-request-size=20MB
-```
-
-### Datenbank zurücksetzen
+### Problem: App startet nicht
 ```bash
-# Lösche einfach den data/ Ordner
-rm -rf data/
+# Prüfe Environment Variables:
+- DATABASE_URL korrekt?
+- Verwendest du Internal URL (nicht External)?
+- SERVER_PORT=8080 gesetzt?
 ```
-Beim nächsten Start werden die Demo-Daten neu angelegt.
 
----
-
-## 🆘 Probleme?
-
-### Maven nicht gefunden?
-Installiere Maven: https://maven.apache.org/install.html
-
-### Java nicht gefunden?
-Installiere Java 17+: https://adoptium.net/
-
-### Port bereits belegt?
-Ändere den Port in `application.properties` oder:
+### Problem: Database Connection Error
 ```bash
-mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
+# Lösung:
+1. Gehe zu PostgreSQL Service
+2. Kopiere "Internal Database URL"
+3. Füge als SPRING_DATASOURCE_URL ein
+4. Stelle sicher Format ist: jdbc:postgresql://...
 ```
 
-### Bilder werden nicht angezeigt?
-- Prüfe ob `src/main/resources/static/uploads/` existiert
-- Prüfe Schreibrechte für den Ordner
-
----
-
-## 📦 Deployment (für Produktion)
-
-### JAR erstellen
+### Problem: Uploads funktionieren nicht
 ```bash
-mvn clean package
+# Render Free Plan:
+- Uploads gehen verloren bei Restart
+- Für Production: Nutze Render Disk ($1/GB/mo)
+- Oder: Integriere Cloudinary (kostenlos 25GB)
 ```
-→ Erstellt `target/art-portfolio-1.0.0.jar`
-
-### JAR ausführen
-```bash
-java -jar target/art-portfolio-1.0.0.jar
-```
-
-### Auf Server deployen
-1. Kopiere die JAR-Datei auf deinen Server
-2. Kopiere den `uploads/` Ordner
-3. Kopiere die `data/` Ordner (falls Daten behalten werden sollen)
-4. Starte mit: `java -jar art-portfolio-1.0.0.jar`
-
----
 
 ## 💡 Tipps
 
-- **Edit Mode**: Immer wieder deaktivieren wenn nicht benötigt
-- **Bilder**: Nutze hochwertige, aber komprimierte Bilder (< 2MB)
-- **Backup**: Sichere regelmäßig den `data/` und `uploads/` Ordner
-- **Performance**: Bei vielen Bildern (50+) ggf. Lazy Loading optimieren
+### Free Tier Limitations
+- App schläft nach 15 Min Inaktivität
+- Erster Request nach Schlaf: 30-60 Sek
+- 750 Stunden/Monat (ca. 50% Uptime)
+
+### Für Production (Starter Plan $7/mo)
+- App schläft nie
+- Schnellere Performance
+- Mehr RAM
+- Bessere für echte Websites
+
+### Custom Domain
+1. [ ] Gehe zu deinem Web Service
+2. [ ] **Settings → Custom Domain**
+3. [ ] Füge deine Domain hinzu
+4. [ ] Folge DNS-Anweisungen
+5. [ ] SSL automatisch aktiviert ✅
+
+### Auto-Deploy aktivieren
+- [ ] **Settings → Build & Deploy**
+- [ ] **Auto-Deploy** = `Yes`
+- [ ] Jeder Git Push deployed automatisch!
+
+## 📊 Monitoring
+
+### Logs anschauen
+1. [ ] Gehe zu deinem Service
+2. [ ] Klicke auf **"Logs"**
+3. [ ] Live-Logs werden angezeigt
+
+### Health Check
+```bash
+# URL: https://deine-app.onrender.com/actuator/health
+# Sollte zurückgeben: {"status":"UP"}
+```
+
+## 💰 Kosten
+
+### Free Tier (zum Testen)
+- Web Service: $0
+- PostgreSQL: $0
+- **Total: $0/Monat**
+
+### Production Setup (empfohlen)
+- Web Service Starter: $7/mo
+- PostgreSQL Starter: $7/mo
+- **Total: $14/Monat**
+
+### Optional Add-ons
+- Render Disk (1GB): $1/mo
+- Render Disk (10GB): $10/mo
+
+## ✅ Success Checklist
+
+Deine App ist erfolgreich deployed wenn:
+
+- [ ] URL öffnet sich ohne Fehler
+- [ ] Portfolio-Seite wird angezeigt
+- [ ] Edit Mode funktioniert
+- [ ] Bilder/Videos können hochgeladen werden
+- [ ] About-Sektion kann bearbeitet werden
+- [ ] CV-Einträge funktionieren
+- [ ] Drag & Drop funktioniert
+- [ ] Änderungen bleiben nach Reload erhalten
+
+## 🎉 Fertig!
+
+Gratulation! Dein Portfolio ist jetzt online! 🚀
+
+### Nächste Schritte:
+1. Füge deine Inhalte hinzu
+2. Teste alle Features
+3. Teile die URL mit Freunden
+4. (Optional) Custom Domain verbinden
+5. (Optional) Upgrade zu Starter Plan
+
+### Support & Hilfe:
+- **Render Docs**: https://render.com/docs
+- **Deployment Guide**: siehe DEPLOYMENT.md
+- **Issues**: Check GitHub Issues
 
 ---
 
-## 🎯 Nächste Schritte
-
-1. ✅ Eigene Bilder hochladen
-2. ✅ About-Text personalisieren
-3. ✅ Lebenslauf vervollständigen
-4. ✅ Farben an deine Brand anpassen
-5. ✅ Testen und Freunden zeigen!
-
-**Viel Erfolg mit deinem Portfolio! 🎨**
+**Viel Erfolg! 🎨**

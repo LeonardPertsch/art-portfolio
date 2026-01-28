@@ -7,10 +7,10 @@
     --white: #ffffff;
     --border: #e0e0e0;
     --overlay: rgba(0, 0, 0, 0.7);
-    
+
     --serif: 'Cormorant', serif;
     --sans: 'Lato', sans-serif;
-    
+
     --spacing-sm: 1rem;
     --spacing-md: 2rem;
     --spacing-lg: 4rem;
@@ -115,6 +115,16 @@ button {
     margin-bottom: var(--spacing-sm);
 }
 
+.hero-title .letter {
+    display: inline-block;
+    transition: transform 0.3s ease;
+    cursor: default;
+}
+
+.hero-title .letter:hover {
+    transform: translateY(-10px);
+}
+
 .hero-subtitle {
     font-size: clamp(1rem, 2vw, 1.5rem);
     color: var(--secondary-color);
@@ -182,7 +192,7 @@ button {
 
 .portfolio-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: var(--spacing-md);
     margin-top: var(--spacing-lg);
 }
@@ -212,7 +222,15 @@ button {
     transition: transform 0.5s ease;
 }
 
-.portfolio-item:hover .image-wrapper img {
+.image-wrapper video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.portfolio-item:hover .image-wrapper img,
+.portfolio-item:hover .image-wrapper video {
     transform: scale(1.05);
 }
 
@@ -283,6 +301,49 @@ button {
 
 .about-text p {
     margin-bottom: var(--spacing-md);
+}
+
+/* ==================== CONTACT INFO ==================== */
+.contact-info {
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--border);
+}
+
+.contact-info h3 {
+    font-size: 1.5rem;
+    margin-bottom: var(--spacing-md);
+    color: var(--primary-color);
+}
+
+.contact-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.contact-item {
+    font-size: 1rem;
+    color: var(--secondary-color);
+}
+
+.contact-item strong {
+    color: var(--primary-color);
+    margin-right: 0.5rem;
+}
+
+.contact-item a {
+    color: var(--accent-color);
+    text-decoration: none;
+    transition: opacity 0.3s ease;
+}
+
+.contact-item a:hover {
+    opacity: 0.7;
+}
+
+.additional-contact {
+    white-space: pre-line;
 }
 
 /* ==================== CV SECTION ==================== */
@@ -486,19 +547,25 @@ button {
 }
 
 /* ==================== RESPONSIVE ==================== */
+@media (max-width: 1024px) {
+    .portfolio-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 @media (max-width: 768px) {
     .portfolio-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .cv-entry {
         grid-template-columns: 1fr;
     }
-    
+
     .main-nav {
         gap: var(--spacing-md);
     }
-    
+
     .section-header {
         flex-direction: column;
         align-items: flex-start;
@@ -517,4 +584,20 @@ body.edit-mode .edit-only {
 
 body.edit-mode .cv-actions {
     display: flex !important;
+}
+
+/* ==================== DRAG AND DROP ==================== */
+body.edit-mode .portfolio-item,
+body.edit-mode .cv-entry {
+    cursor: move;
+}
+
+.portfolio-item.dragging,
+.cv-entry.dragging {
+    opacity: 0.5;
+}
+
+.portfolio-item.drag-over,
+.cv-entry.drag-over {
+    border: 2px dashed var(--accent-color);
 }

@@ -22,18 +22,18 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class PortfolioService {
-    
+
     private final PortfolioImageRepository imageRepository;
     private final AboutSectionRepository aboutRepository;
     private final CvEntryRepository cvRepository;
-    
+
     private final String uploadDir = "src/main/resources/static/uploads/";
-    
+
     // Portfolio Images
     public List<PortfolioImage> getAllImages() {
         return imageRepository.findAllByOrderByDisplayOrderAsc();
     }
-    
+
     @Transactional
     public PortfolioImage uploadImage(MultipartFile file, String title, String description) throws IOException {
         // Create upload directory if not exists
@@ -41,16 +41,16 @@ public class PortfolioService {
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }
-        
+
         // Generate unique filename
         String originalFilename = file.getOriginalFilename();
         String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
         String filename = UUID.randomUUID().toString() + extension;
-        
+
         // Save file
         Path filePath = uploadPath.resolve(filename);
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-        
+
         // Save to database
         PortfolioImage image = new PortfolioImage();
         image.setFilename(filename);
@@ -58,34 +58,34 @@ public class PortfolioService {
         image.setTitle(title);
         image.setDescription(description);
         image.setDisplayOrder(imageRepository.findAll().size());
-        
+
         return imageRepository.save(image);
     }
-    
+
     @Transactional
     public void deleteImage(Long id) throws IOException {
         PortfolioImage image = imageRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Image not found"));
-        
+                .orElseThrow(() -> new RuntimeException("Image not found"));
+
         // Delete file
         Path filePath = Paths.get(uploadDir + image.getFilename());
         Files.deleteIfExists(filePath);
-        
+
         // Delete from database
         imageRepository.delete(image);
     }
-    
+
     @Transactional
     public PortfolioImage updateImage(Long id, String title, String description) {
         PortfolioImage image = imageRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Image not found"));
-        
+                .orElseThrow(() -> new RuntimeException("Image not found"));
+
         image.setTitle(title);
         image.setDescription(description);
-        
+
         return imageRepository.save(image);
     }
-    
+
     // About Section
     public AboutSection getAboutSection() {
         List<AboutSection> sections = aboutRepository.findAll();
@@ -97,7 +97,7 @@ public class PortfolioService {
         }
         return sections.get(0);
     }
-    
+
     @Transactional
     public AboutSection updateAboutSection(String title, String content) {
         AboutSection section = getAboutSection();
@@ -105,12 +105,23 @@ public class PortfolioService {
         section.setContent(content);
         return aboutRepository.save(section);
     }
-    
+
+    @Transactional
+    public AboutSection updateAboutSectionWithContact(String title, String content, String email, String phone, String additionalContact) {
+        AboutSection section = getAboutSection();
+        section.setTitle(title);
+        section.setContent(content);
+        section.setEmail(email);
+        section.setPhone(phone);
+        section.setAdditionalContact(additionalContact);
+        return aboutRepository.save(section);
+    }
+
     // CV Entries
     public List<CvEntry> getAllCvEntries() {
         return cvRepository.findAllByOrderByDisplayOrderAsc();
     }
-    
+
     @Transactional
     public CvEntry createCvEntry(String year, String title, String description, String entryType) {
         CvEntry entry = new CvEntry();
@@ -121,22 +132,46 @@ public class PortfolioService {
         entry.setDisplayOrder(cvRepository.findAll().size());
         return cvRepository.save(entry);
     }
-    
+
     @Transactional
     public CvEntry updateCvEntry(Long id, String year, String title, String description, String entryType) {
         CvEntry entry = cvRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("CV Entry not found"));
-        
+                .orElseThrow(() -> new RuntimeException("CV Entry not found"));
+
         entry.setYear(year);
         entry.setTitle(title);
         entry.setDescription(description);
         entry.setEntryType(entryType);
-        
+
         return cvRepository.save(entry);
     }
-    
+
     @Transactional
     public void deleteCvEntry(Long id) {
         cvRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void reorderImages(List<Long> imageIds) {
+        for (int i = 0; i < imageIds.size(); i++) {
+            Long id = imageIds.get(i);
+            PortfolioImage image = imageRepository.findById(id).orElse(null);
+            if (image != null) {
+                image.setDisplayOrder(i);
+                imageRepository.save(image);
+            }
+        }
+    }
+
+    @Transactional
+    public void reorderCvEntries(List<Long> cvIds) {
+        for (int i = 0; i < cvIds.size(); i++) {
+            Long id = cvIds.get(i);
+            CvEntry entry = cvRepository.findById(id).orElse(null);
+            if (entry != null) {
+                entry.setDisplayOrder(i);
+                cvRepository.save(entry);
+            }
+        }
     }
 }

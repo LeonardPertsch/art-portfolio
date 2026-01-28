@@ -1,178 +1,353 @@
-# Art Portfolio - Spring Boot Application
+# 🎨 Art Portfolio - Professional Portfolio Website
 
-Ein elegantes Portfolio-System für Kunststudenten im Stil des Squarespace Reseda Templates.
+A modern, full-featured portfolio website for artists, designers, and creative professionals. Built with Spring Boot, PostgreSQL, and featuring an intuitive drag-and-drop interface for content management.
 
-## Features
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Java](https://img.shields.io/badge/Java-21-orange.svg)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2-green.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-- 📸 **Bild-Upload**: Hochladen und Verwalten von Portfolio-Bildern
-- ✏️ **Live-Editing**: Texte und Inhalte direkt bearbeiten während die App läuft
-- 📝 **About-Section**: Persönlicher Text über sich selbst
-- 🎓 **Lebenslauf**: CV mit Ausbildung, Ausstellungen, Awards und Erfahrungen
-- 🎨 **Reseda-Design**: Elegantes, minimalistisches Grid-Layout
-- 💾 **Persistente Daten**: H2-Datenbank speichert alle Änderungen
+## ✨ Features
 
-## Voraussetzungen
+### Content Management
+- 🖼️ **Image & Video Gallery** - Upload and display images and videos with autoplay loop
+- 📝 **About Section** - Rich text editor with contact information
+- 🎓 **CV/Resume Section** - Chronological listing of education, exhibitions, awards, and experience
+- ✏️ **Edit Mode** - Toggle between view and edit mode with one click
+- 🔄 **Drag & Drop** - Reorder portfolio items and CV entries intuitively
 
-- Java 17 oder höher
-- Maven 3.6+
+### Technical Features
+- 🎯 **Responsive Design** - Works perfectly on desktop, tablet, and mobile
+- ⚡ **Fast Performance** - Optimized loading with lazy loading and caching
+- 🐳 **Docker Ready** - Easy deployment with Docker and Docker Compose
+- 🔒 **Secure** - Built with Spring Security best practices
+- 📊 **Health Monitoring** - Built-in health checks and actuator endpoints
 
-## Installation & Start
+### User Experience
+- 🎭 **Interactive Title** - Hover effect on hero title letters
+- 🎬 **Video Support** - Automatic video playback with loop
+- 📱 **Mobile Optimized** - Touch-friendly interface
+- 🌐 **Multi-language Ready** - Easy to add translations
 
-### Option 1: Mit Maven (empfohlen)
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Java 21 or higher
+- Maven 3.9+
+- Docker & Docker Compose (for containerized deployment)
+- PostgreSQL 16 (if running without Docker)
+
+### Option 1: Docker Compose (Recommended)
 
 ```bash
-# Im Projektverzeichnis
+# Clone the repository
+git clone <your-repo-url>
+cd art-portfolio
+
+# Start with Docker Compose
+docker-compose up --build
+
+# Or use the start script
+./start.sh
+```
+
+The application will be available at `http://localhost:8080`
+
+### Option 2: Local Development
+
+```bash
+# 1. Start PostgreSQL
+docker run -d \
+  --name portfolio-db \
+  -e POSTGRES_DB=portfoliodb \
+  -e POSTGRES_USER=portfolio \
+  -e POSTGRES_PASSWORD=portfolio \
+  -p 5432:5432 \
+  postgres:16-alpine
+
+# 2. Build and run the application
+mvn clean install
 mvn spring-boot:run
+
+# Or
+./mvnw clean install
+./mvnw spring-boot:run
 ```
 
-### Option 2: JAR erstellen und ausführen
+## 📖 Documentation
 
-```bash
-# JAR bauen
-mvn clean package
+- **[Deployment Guide](DEPLOYMENT.md)** - Complete guide for deploying to Render.com
+- **[API Documentation](#api-endpoints)** - REST API reference
+- **[Configuration](#configuration)** - Environment variables and settings
 
-# JAR ausführen
-java -jar target/art-portfolio-1.0.0.jar
+## 🎯 Usage
+
+### Accessing the Application
+
+1. **View Mode** (Default)
+    - Navigate to `http://localhost:8080`
+    - Browse portfolio, read about section, view CV
+
+2. **Edit Mode**
+    - Click "Edit Mode" button in top-right corner
+    - All edit controls become visible
+    - Upload images/videos, edit text, reorder items
+
+### Managing Content
+
+#### Upload Images/Videos
+1. Enable Edit Mode
+2. Click "+ Add Image/Video"
+3. Select file (supports: JPG, PNG, GIF, MP4, WebM, MOV)
+4. Add title and description (optional)
+5. Click "Upload"
+
+#### Edit About Section
+1. Enable Edit Mode
+2. Click "Edit" button in About section
+3. Update title, content, and contact information
+4. Click "Save"
+
+#### Manage CV Entries
+1. Enable Edit Mode
+2. Click "+ Add Entry" in CV section
+3. Fill in year, title, description, and type
+4. Click "Save"
+
+#### Reorder Items
+1. Enable Edit Mode
+2. Drag and drop items to reorder
+3. Order is saved automatically
+
+## 🔧 Configuration
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SERVER_PORT` | 8080 | Application port |
+| `SPRING_DATASOURCE_URL` | jdbc:postgresql://localhost:5432/portfoliodb | Database URL |
+| `SPRING_DATASOURCE_USERNAME` | portfolio | Database username |
+| `SPRING_DATASOURCE_PASSWORD` | portfolio | Database password |
+| `MAX_FILE_SIZE` | 50MB | Maximum file upload size |
+| `MAX_REQUEST_SIZE` | 50MB | Maximum request size |
+| `LOG_LEVEL_ROOT` | INFO | Root logging level |
+
+### Database Configuration
+
+The application uses PostgreSQL by default. Connection settings:
+
+```properties
+spring.datasource.url=jdbc:postgresql://localhost:5432/portfoliodb
+spring.datasource.username=portfolio
+spring.datasource.password=portfolio
+spring.jpa.hibernate.ddl-auto=update
 ```
 
-## Zugriff
-
-Nach dem Start ist die Anwendung erreichbar unter:
-- **Portfolio**: http://localhost:8080
-- **H2 Console** (zum Debuggen): http://localhost:8080/h2-console
-
-## Verwendung
-
-### Edit Mode aktivieren
-
-1. Klicke auf den **"Edit Mode"** Button oben rechts
-2. Jetzt werden alle Bearbeitungsfunktionen sichtbar
-
-### Bilder hochladen
-
-1. Edit Mode aktivieren
-2. Klick auf **"+ Add Image"** in der Work-Section
-3. Bild auswählen, optional Titel und Beschreibung hinzufügen
-4. Upload
-
-### Texte bearbeiten
-
-1. Edit Mode aktivieren
-2. Klick auf **"✎ Edit"** bei About-Section
-3. Titel und Content anpassen
-4. Speichern
-
-### Lebenslauf verwalten
-
-1. Edit Mode aktivieren
-2. Klick auf **"+ Add Entry"** in der CV-Section
-3. Jahr, Titel, Beschreibung und Typ auswählen
-4. Speichern
-
-## Datenstruktur
-
-Die Daten werden in einer H2-Datenbank gespeichert:
-- **portfolio_images**: Alle Portfolio-Bilder
-- **about_section**: About-Text
-- **cv_entries**: Lebenslauf-Einträge
-
-Die Datenbank-Datei befindet sich in: `./data/portfolio.mv.db`
-
-## Dateispeicherung
-
-Hochgeladene Bilder werden gespeichert in:
-```
-src/main/resources/static/uploads/
-```
-
-## API Endpoints
+## 📡 API Endpoints
 
 ### Images
-- `GET /api/images` - Alle Bilder abrufen
-- `POST /api/images/upload` - Bild hochladen
-- `PUT /api/images/{id}` - Bild bearbeiten
-- `DELETE /api/images/{id}` - Bild löschen
+
+- `GET /api/images` - Get all images
+- `POST /api/images/upload` - Upload new image/video
+- `PUT /api/images/{id}` - Update image metadata
+- `DELETE /api/images/{id}` - Delete image
+- `PUT /api/images/reorder` - Reorder images
 
 ### About Section
-- `GET /api/about` - About-Text abrufen
-- `PUT /api/about` - About-Text aktualisieren
+
+- `GET /api/about` - Get about section
+- `PUT /api/about` - Update about section
 
 ### CV Entries
-- `GET /api/cv` - Alle CV-Einträge abrufen
-- `POST /api/cv` - CV-Eintrag erstellen
-- `PUT /api/cv/{id}` - CV-Eintrag bearbeiten
-- `DELETE /api/cv/{id}` - CV-Eintrag löschen
 
-## Technologie-Stack
+- `GET /api/cv` - Get all CV entries
+- `POST /api/cv` - Create CV entry
+- `PUT /api/cv/{id}` - Update CV entry
+- `DELETE /api/cv/{id}` - Delete CV entry
+- `PUT /api/cv/reorder` - Reorder CV entries
 
-- **Backend**: Spring Boot 3.2.1
-- **Database**: H2 (embedded)
-- **Template Engine**: Thymeleaf
-- **Frontend**: HTML5, CSS3, Vanilla JavaScript
-- **Fonts**: Cormorant (Serif), Lato (Sans-Serif)
+### Health Check
 
-## Anpassungen
+- `GET /actuator/health` - Application health status
 
-### Farben ändern
-
-In `src/main/resources/static/css/style.css`:
-```css
-:root {
-    --primary-color: #2c2c2c;
-    --secondary-color: #666;
-    --accent-color: #d4af37;
-    /* ... */
-}
-```
-
-### Port ändern
-
-In `src/main/resources/application.properties`:
-```properties
-server.port=8080
-```
-
-## Projektstruktur
+## 🏗️ Project Structure
 
 ```
 art-portfolio/
 ├── src/
-│   └── main/
-│       ├── java/com/portfolio/artportfolio/
-│       │   ├── controller/      # REST & Web Controller
-│       │   ├── model/           # Entities
-│       │   ├── repository/      # Data Access
-│       │   ├── service/         # Business Logic
-│       │   └── ArtPortfolioApplication.java
-│       └── resources/
-│           ├── static/
-│           │   ├── css/        # Stylesheets
-│           │   ├── js/         # JavaScript
-│           │   └── uploads/    # Hochgeladene Bilder
-│           ├── templates/      # Thymeleaf Templates
-│           └── application.properties
-├── pom.xml
-└── README.md
+│   ├── main/
+│   │   ├── java/com/portfolio/artportfolio/
+│   │   │   ├── config/          # Configuration classes
+│   │   │   ├── controller/      # REST & Web controllers
+│   │   │   ├── model/           # JPA entities
+│   │   │   ├── repository/      # Data repositories
+│   │   │   └── service/         # Business logic
+│   │   └── resources/
+│   │       ├── static/          # CSS, JS, uploads
+│   │       ├── templates/       # Thymeleaf templates
+│   │       └── application.properties
+│   └── test/                    # Unit tests
+├── Dockerfile                   # Container definition
+├── docker-compose.yml           # Multi-container setup
+├── pom.xml                      # Maven dependencies
+├── render.yaml                  # Render deployment config
+└── DEPLOYMENT.md               # Deployment guide
 ```
 
-## Troubleshooting
+## 🚢 Deployment
 
-### Port bereits belegt
+### Deploy to Render.com
+
+1. **Push to Git**
+   ```bash
+   git add .
+   git commit -m "Initial commit"
+   git push origin main
+   ```
+
+2. **Follow Deployment Guide**
+    - See [DEPLOYMENT.md](DEPLOYMENT.md) for complete instructions
+    - One-click deploy with `render.yaml`
+    - Or manually configure via Render dashboard
+
+3. **Set Environment Variables**
+    - Database URL, username, password
+    - File upload limits
+    - Logging levels
+
+### Deploy to Other Platforms
+
+The Docker setup works with:
+- **Heroku** - Use `heroku.yml` or Container Registry
+- **AWS ECS** - Use Fargate or EC2
+- **Google Cloud Run** - Direct Docker deployment
+- **Azure Container Apps** - Container deployment
+- **DigitalOcean App Platform** - Docker support
+
+## 🔐 Security Considerations
+
+### For Production
+
+1. **Change default passwords**
+   ```bash
+   POSTGRES_PASSWORD=<strong-password>
+   ```
+
+2. **Use environment variables for secrets**
+    - Never commit passwords to Git
+    - Use Render Secret Files or similar
+
+3. **Enable HTTPS** (automatic on Render)
+
+4. **Add authentication** (optional)
+   ```xml
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-security</artifactId>
+   </dependency>
+   ```
+
+5. **Configure CORS** if needed
+   ```java
+   @CrossOrigin(origins = "https://yourdomain.com")
+   ```
+
+## 🛠️ Development
+
+### Local Development Setup
+
 ```bash
-# Anderen Port verwenden
-mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
+# Install dependencies
+mvn clean install
+
+# Run in development mode
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
+
+# Run tests
+mvn test
+
+# Build production JAR
+mvn clean package -DskipTests
 ```
 
-### Bilder werden nicht angezeigt
-- Prüfe, ob der `uploads`-Ordner existiert
-- Prüfe Dateiberechtigungen
+### Hot Reload
 
-### Datenbank zurücksetzen
+Enable Spring Boot DevTools for automatic restart:
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-devtools</artifactId>
+    <optional>true</optional>
+</dependency>
+```
+
+## 📊 Monitoring
+
+### Health Checks
+
 ```bash
-# Lösche die Datenbankdatei
-rm -rf data/
+# Check application health
+curl http://localhost:8080/actuator/health
+
+# View metrics (if enabled)
+curl http://localhost:8080/actuator/metrics
 ```
 
-## License
+### Logs
 
-MIT License - frei verwendbar für persönliche und kommerzielle Projekte.
+```bash
+# Docker Compose logs
+docker-compose logs -f app
+
+# Specific service
+docker-compose logs -f postgres
+
+# Follow logs
+tail -f logs/spring.log
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Spring Boot team for the excellent framework
+- Thymeleaf for the template engine
+- PostgreSQL for the reliable database
+- Render.com for easy deployment
+
+## 📧 Support
+
+For issues, questions, or suggestions:
+- Open an issue on GitHub
+- Check [DEPLOYMENT.md](DEPLOYMENT.md) for deployment help
+- Review existing issues for solutions
+
+## 🗺️ Roadmap
+
+- [ ] Multi-language support (i18n)
+- [ ] User authentication system
+- [ ] Cloud storage integration (S3, Cloudinary)
+- [ ] Image optimization and compression
+- [ ] Export portfolio to PDF
+- [ ] Analytics dashboard
+- [ ] Theme customization
+- [ ] Blog section
+
+---
+
+**Made with ❤️ for artists and creative professionals**

@@ -18,15 +18,15 @@ import java.util.Map;
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class ApiController {
-    
+
     private final PortfolioService portfolioService;
-    
+
     // Image Endpoints
     @GetMapping("/images")
     public List<PortfolioImage> getAllImages() {
         return portfolioService.getAllImages();
     }
-    
+
     @PostMapping("/images/upload")
     public ResponseEntity<?> uploadImage(
             @RequestParam("file") MultipartFile file,
@@ -39,7 +39,7 @@ public class ApiController {
             return ResponseEntity.badRequest().body("Upload failed: " + e.getMessage());
         }
     }
-    
+
     @PutMapping("/images/{id}")
     public ResponseEntity<?> updateImage(
             @PathVariable Long id,
@@ -52,7 +52,7 @@ public class ApiController {
             return ResponseEntity.badRequest().body("Update failed: " + e.getMessage());
         }
     }
-    
+
     @DeleteMapping("/images/{id}")
     public ResponseEntity<?> deleteImage(@PathVariable Long id) {
         try {
@@ -64,31 +64,44 @@ public class ApiController {
             return ResponseEntity.badRequest().body("Delete failed: " + e.getMessage());
         }
     }
-    
+
+    @PutMapping("/images/reorder")
+    public ResponseEntity<?> reorderImages(@RequestBody List<Long> imageIds) {
+        try {
+            portfolioService.reorderImages(imageIds);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Reorder failed: " + e.getMessage());
+        }
+    }
+
     // About Section Endpoints
     @GetMapping("/about")
     public AboutSection getAboutSection() {
         return portfolioService.getAboutSection();
     }
-    
+
     @PutMapping("/about")
     public ResponseEntity<?> updateAboutSection(
             @RequestParam("title") String title,
-            @RequestParam("content") String content) {
+            @RequestParam("content") String content,
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "additionalContact", required = false) String additionalContact) {
         try {
-            AboutSection section = portfolioService.updateAboutSection(title, content);
+            AboutSection section = portfolioService.updateAboutSectionWithContact(title, content, email, phone, additionalContact);
             return ResponseEntity.ok(section);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Update failed: " + e.getMessage());
         }
     }
-    
+
     // CV Endpoints
     @GetMapping("/cv")
     public List<CvEntry> getAllCvEntries() {
         return portfolioService.getAllCvEntries();
     }
-    
+
     @PostMapping("/cv")
     public ResponseEntity<?> createCvEntry(
             @RequestParam("year") String year,
@@ -102,7 +115,7 @@ public class ApiController {
             return ResponseEntity.badRequest().body("Creation failed: " + e.getMessage());
         }
     }
-    
+
     @PutMapping("/cv/{id}")
     public ResponseEntity<?> updateCvEntry(
             @PathVariable Long id,
@@ -117,7 +130,7 @@ public class ApiController {
             return ResponseEntity.badRequest().body("Update failed: " + e.getMessage());
         }
     }
-    
+
     @DeleteMapping("/cv/{id}")
     public ResponseEntity<?> deleteCvEntry(@PathVariable Long id) {
         try {
@@ -127,6 +140,16 @@ public class ApiController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Delete failed: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/cv/reorder")
+    public ResponseEntity<?> reorderCvEntries(@RequestBody List<Long> cvIds) {
+        try {
+            portfolioService.reorderCvEntries(cvIds);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Reorder failed: " + e.getMessage());
         }
     }
 }
