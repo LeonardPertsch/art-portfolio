@@ -17,6 +17,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*") // Add if needed for development
 public class ApiController {
 
     private final PortfolioService portfolioService;
@@ -81,17 +82,22 @@ public class ApiController {
         return portfolioService.getAboutSection();
     }
 
+    // FIXED: Use @RequestBody to accept JSON data instead of @RequestParam
     @PutMapping("/about")
-    public ResponseEntity<?> updateAboutSection(
-            @RequestParam("title") String title,
-            @RequestParam("content") String content,
-            @RequestParam(value = "email", required = false) String email,
-            @RequestParam(value = "phone", required = false) String phone,
-            @RequestParam(value = "additionalContact", required = false) String additionalContact) {
+    public ResponseEntity<?> updateAboutSection(@RequestBody Map<String, String> aboutData) {
         try {
-            AboutSection section = portfolioService.updateAboutSectionWithContact(title, content, email, phone, additionalContact);
+            String title = aboutData.get("title");
+            String content = aboutData.get("content");
+            String email = aboutData.get("email");
+            String phone = aboutData.get("phone");
+            String additionalContact = aboutData.get("additionalContact");
+
+            AboutSection section = portfolioService.updateAboutSectionWithContact(
+                    title, content, email, phone, additionalContact
+            );
             return ResponseEntity.ok(section);
         } catch (Exception e) {
+            e.printStackTrace(); // Log the error
             return ResponseEntity.badRequest().body("Update failed: " + e.getMessage());
         }
     }
