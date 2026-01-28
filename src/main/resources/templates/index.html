@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Art Portfolio</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@300;400;500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Edit Mode Toggle -->
+    <div class="edit-mode-toggle">
+        <button id="editModeBtn" onclick="toggleEditMode()">
+            <span id="editModeIcon">✎</span> Edit Mode
+        </button>
+    </div>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Portfolio</h1>
+            <p class="hero-subtitle">Art & Design</p>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <a href="#work">Work</a>
+        <a href="#about">About</a>
+        <a href="#cv">CV</a>
+    </nav>
+
+    <!-- Portfolio Grid Section -->
+    <section id="work" class="portfolio-section">
+        <div class="section-header">
+            <h2>Selected Work</h2>
+            <button class="add-btn edit-only" onclick="openUploadModal()" style="display: none;">+ Add Image</button>
+        </div>
+        
+        <div class="portfolio-grid" id="portfolioGrid">
+            <div th:each="image : ${images}" class="portfolio-item" th:attr="data-id=${image.id}">
+                <div class="image-wrapper">
+                    <img th:src="@{${image.filepath}}" th:alt="${image.title}" loading="lazy">
+                    <div class="image-overlay edit-only" style="display: none;">
+                        <button class="overlay-btn edit-btn" th:onclick="'editImage(' + ${image.id} + ')'">✎ Edit</button>
+                        <button class="overlay-btn delete-btn" th:onclick="'deleteImage(' + ${image.id} + ')'">🗑 Delete</button>
+                    </div>
+                </div>
+                <div class="image-info" th:if="${image.title != null or image.description != null}">
+                    <h3 th:if="${image.title}" th:text="${image.title}"></h3>
+                    <p th:if="${image.description}" th:text="${image.description}"></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="about-content">
+            <div class="section-header">
+                <h2 class="editable-title" th:text="${about.title}">About Me</h2>
+                <button class="edit-btn-small edit-only" onclick="editAbout()" style="display: none;">✎ Edit</button>
+            </div>
+            <div class="about-text editable-content" th:utext="${about.content}">
+                <p>Add your story here.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CV Section -->
+    <section id="cv" class="cv-section">
+        <div class="cv-content">
+            <div class="section-header">
+                <h2>CV</h2>
+                <button class="add-btn edit-only" onclick="openCvModal()" style="display: none;">+ Add Entry</button>
+            </div>
+            
+            <div class="cv-grid" id="cvGrid">
+                <div th:each="entry : ${cvEntries}" class="cv-entry" th:attr="data-id=${entry.id}">
+                    <div class="cv-year" th:text="${entry.year}">2024</div>
+                    <div class="cv-details">
+                        <h3 th:text="${entry.title}">Title</h3>
+                        <p th:if="${entry.description}" th:text="${entry.description}"></p>
+                        <span class="cv-type" th:text="${entry.entryType}"></span>
+                        <div class="cv-actions edit-only" style="display: none;">
+                            <button class="edit-btn-small" th:onclick="'editCvEntry(' + ${entry.id} + ')'">✎ Edit</button>
+                            <button class="delete-btn-small" th:onclick="'deleteCvEntry(' + ${entry.id} + ')'">🗑 Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <p>&copy; 2026 Art Portfolio. All rights reserved.</p>
+    </footer>
+
+    <!-- Upload Image Modal -->
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeUploadModal()">&times;</span>
+            <h2>Upload Image</h2>
+            <form id="uploadForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label>Image File *</label>
+                    <input type="file" id="imageFile" name="file" accept="image/*" required>
+                </div>
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="imageTitle" name="title" placeholder="Optional">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="imageDescription" name="description" rows="3" placeholder="Optional"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" onclick="closeUploadModal()">Cancel</button>
+                    <button type="submit" class="primary">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Image Modal -->
+    <div id="editImageModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditImageModal()">&times;</span>
+            <h2>Edit Image</h2>
+            <form id="editImageForm">
+                <input type="hidden" id="editImageId">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="editImageTitle" name="title">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="editImageDescription" name="description" rows="3"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" onclick="closeEditImageModal()">Cancel</button>
+                    <button type="submit" class="primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit About Modal -->
+    <div id="editAboutModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditAboutModal()">&times;</span>
+            <h2>Edit About Section</h2>
+            <form id="editAboutForm">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="aboutTitle" name="title" th:value="${about.title}">
+                </div>
+                <div class="form-group">
+                    <label>Content</label>
+                    <textarea id="aboutContent" name="content" rows="10" th:text="${about.content}"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" onclick="closeEditAboutModal()">Cancel</button>
+                    <button type="submit" class="primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CV Entry Modal -->
+    <div id="cvModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCvModal()">&times;</span>
+            <h2 id="cvModalTitle">Add CV Entry</h2>
+            <form id="cvForm">
+                <input type="hidden" id="cvEntryId">
+                <div class="form-group">
+                    <label>Year *</label>
+                    <input type="text" id="cvYear" name="year" placeholder="2024" required>
+                </div>
+                <div class="form-group">
+                    <label>Title *</label>
+                    <input type="text" id="cvTitle" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="cvDescription" name="description" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Type *</label>
+                    <select id="cvType" name="entryType" required>
+                        <option value="EDUCATION">Education</option>
+                        <option value="EXHIBITION">Exhibition</option>
+                        <option value="AWARD">Award</option>
+                        <option value="EXPERIENCE">Experience</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" onclick="closeCvModal()">Cancel</button>
+                    <button type="submit" class="primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script th:src="@{/js/main.js}"></script>
+</body>
+</html>
